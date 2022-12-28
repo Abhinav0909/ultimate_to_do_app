@@ -1,10 +1,24 @@
 import "./App.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 function App() {
   const [input, setInput] = useState("");
   const [todos, setTodos] = useState([]);
   const [triggerTask, setTriggerTask] = useState(false);
   const [isAnyCompletedTask, setIsAnyCompletedTask] = useState(false);
+  useEffect(() => {
+    const storage = localStorage.getItem("todos");
+    const data = JSON.parse(storage);
+    if (data) {
+      setTodos(data);
+    }
+  }, []);
+  useEffect(() => {
+    const json = JSON.stringify(todos);
+    if (todos?.length) {
+      localStorage.setItem("todos", json);
+    }
+  }, [todos]);
+
   const addData = () => {
     if (input === null || input === "") {
       alert("Need to type something");
@@ -24,6 +38,7 @@ function App() {
   };
   function removeData(key) {
     const updatedList = todos.filter((todo) => todo.id !== key);
+    localStorage.removeItem("todos", []);
     setTodos(updatedList);
   }
   const handleCheckBox = (key) => {
@@ -42,6 +57,10 @@ function App() {
   const handleComplete = () => {
     setTriggerTask(true);
   };
+  const removeAllData = () => {
+    setTodos([]);
+    localStorage.clear();
+  };
   return (
     <div className="App">
       <h1 className="title">To do app</h1>
@@ -54,28 +73,29 @@ function App() {
         ></input>
         <button onClick={addData}>Add</button>
       </div>
-      {todos.map((todo) => (
-        <div key={todo.id} className="list">
-          <div className="todolist">{todo.text}</div>
-          <div>
-            <input
-              className="checkbox"
-              type="checkbox"
-              checked={todo.completed}
-              onChange={() => handleCheckBox(todo.id)}
-            ></input>
-            <button onClick={() => removeData(todo.id)}>Remove</button>
+      {todos !== [] &&
+        todos.map((todo) => (
+          <div key={todo.id} className="list">
+            <div className="todolist">{todo.text}</div>
+            <div>
+              <input
+                className="checkbox"
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => handleCheckBox(todo.id)}
+              ></input>
+              <button onClick={() => removeData(todo.id)}>Remove</button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
       <div className="btns">
         {todos.length >= 1 && (
-          <button className="remove" onClick={() => setTodos([])}>
+          <button className="remove" onClick={() => removeAllData()}>
             Remove All
           </button>
         )}
         <button
-          clasName="complete_task"
+          className="complete_task"
           onClick={handleComplete}
           disabled={!isAnyCompletedTask}
         >
